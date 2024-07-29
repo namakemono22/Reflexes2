@@ -370,7 +370,8 @@
         {
           random_number = Math.floor( Math.random() * 8 + 1);
           console.log(random_number)
-          document.getElementById("target").src = target_list[random_number-1];
+          const ccc = document.getElementById("target");
+          ccc.src = target_list[random_number-1];
           ttt = shuffleArray(canvas_list);
           for(let i = 1; i <= 8; i++)
           {
