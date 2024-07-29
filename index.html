@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>反射神経テスト</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <style>
+    .all
+    {
+      display: flex;
+      width: 95vw;/*見えてる大きさ１００ｖｗに対して*/
+      height: 80vh;
+      justify-content:flex-end;
+    }
+    .canvas_and_timer
+    {
+      max-width:100%;
+      height: auto;
+    }
+    .number_all
+    {
+      justify-content:space-evenly;
+      width: 40%;/*親の大きさに対して*/
+      display: flex;
+    }
+    .result_all
+    {
+      justify-content:flex-end;
+      display: flex;
+    }
+    .average_all
+    {
+      flex-direction: column;
+      position: relative;
+
+    }
+    .target_canvas_all
+    {
+        display: flex;
+        justify-content: center; /* 水平方向（左右）の中央揃え */
+        align-items: center; /* 垂直方向（上下）の中央揃え */
+    }
+    #explanation
+    {
+      font-size: 20px; /* ピクセル単位でのフォントサイズ指定 */
+      text-align: center; /* テキストを中央揃えにする */
+      color: rgb(0, 210, 210);
+      margin-right: 60px; /* 左に10px移動 */
+
+    }
+    /* 変数の定義 */
+    :root
+    {
+      --img-size: 100%;
+    }
+    #target
+    {
+      /*width: 15%;
+      height: auto;
+      margin-left: 38%;右に500px移動 */
+      width: var(--img-size);
+      height: auto;
+    }
+    .target_canvas
+    {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        width: 350px;
+        height: 350px;
+        column-gap: 10px; /* 列間のマージン */
+        row-gap: 10px; /* 行間のマージン */
+        margin-right: 60px; /* 左に10px移動 */
+    }
+    #canvas10
+    {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(255, 255, 255, 0.5); /* 透明度が50%の黒色背景 */
+        z-index: 999; /* 必要に応じて、他の要素よりも上に表示する */
+        position: absolute;
+        margin-right: 60px; /* 左に10px移動 */
+    }
+    /*#canvas5
+    {
+        width: 80px;
+        height: 80px;
+        background-color: #191970;
+    }*/
+    #canvas,#canvas1, #canvas2, #canvas3, #canvas4,
+    #canvas5, #canvas6, #canvas7, #canvas8, #canvas9
+    {
+        width: var(--img-size);
+        height: auto;
+    }
+    .img
+    {
+      position:  absolute;
+      pointer-events: none;
+      height: auto;/*アクセプト比調整用*/
+      top: 65%;
+      z-index:-11;
+    }
+    .timer
+    {
+      font-size:2em;
+      margin-right: 20px; /* 左に10px移動 */
+    }
+    .button2
+    {
+      background:rgb(220, 97, 23);
+      border:black 4px solid;
+      text-decoration:none;
+      color:black;
+      font-size:1.5em;
+      width: 80%;
+      height: 20%;
+    }
+    .result
+    {
+      font-size:1.2em;
+    }
+    .result_f
+    {
+      font-size:1.2em;
+    }
+    p
+    {
+      font-size:1.5em;
+    }
+    .average
+    {
+      font-size:1.5em;
+    }
+    .average_f
+    {
+      font-size:1.5em;
+    }
+
+    </style>
+    <script>
+      "use strict";
+      let ctx;
+
+      let random = 0;
+      let stay_timer = NaN; // スタートするまでの時間計測用タイマー
+      let game_timer = NaN; // クリアまでの時間計測用タイマー
+      let stayTime = null;//待機時間
+      let startTime = null; // ゲーム開始時刻
+      let endTime = null;//クリックされ時刻
+      let timer_time = null;
+      
+      let game_bool = false;
+      let red_bool = false;
+      
+      let displayOriginal;
+
+      let result_array = [];
+      let result_f_array = [];
+      let first = true;
+
+      let target_list = 
+      [
+        "stage11.png","stage22.png","stage33.png",
+        "stage44.png","stage55.png","stage66.png",
+        "stage77.png","stage88.png"
+      ];
+
+      let canvas_list = 
+      [
+        1,2,3,4,5,6,7,8
+      ];
+
+      let random_number = 0;
+      let ttt=[]
+      // 初期化関数
+      function init() 
+      {
+        reset_value();
+        displayOriginal = document.getElementById('img').style.display;
+        if(first)
+        {
+          let add = document.createElement("li");
+          let add_f = document.createElement("li");
+          result_array.push(0.000.toFixed(3));
+          result_f_array.push(0.0.toFixed(1));
+          document.getElementById("result").appendChild(add);
+          document.getElementById("result_f").appendChild(add_f);
+          add.textContent = result_array[0];
+          add_f.textContent = result_f_array[0]+"f";
+          document.getElementById("average").textContent = 0.000.toFixed(3);
+          document.getElementById("average_f").textContent = 0.0.toFixed(1)+"f";
+        }
+      }
+      function game_click()
+      {
+        if(!game_bool)
+        {
+          document.getElementById("target").src = "stage_zero.png";
+          document.getElementById('img').style.display = 'none';
+          document.getElementById('explanation').style.opacity = '0';
+          for(let i = 1; i <= 8; i++)
+          {
+              const bbb = document.getElementById(`canvas${i}`);
+              bbb.style.opacity = '0';
+          }
+          const bbb = document.getElementById("canvas10");
+          bbb.style.display = "none";
+          reset_value();
+          stayTime = new Date();
+          random = (Math.random() * 3 + 1) * 10;//0~5
+          clearInterval(stay_timer);
+          clearInterval(game_timer);
+          document.body.style.backgroundColor = 'black';
+
+          stay_timer = setInterval(stay_tick, 10);  // タイマー開始
+          document.getElementById("time").textContent = "0.000";
+          document.body.style.backgroundColor = "#000000";
+          game_bool = true;
+        }else if(game_bool)
+          {
+            clearInterval(game_timer);
+            clearInterval(stay_timer);
+            document.getElementById('explanation').style.opacity = '1';
+
+            if(first)
+            {
+              result_array = [];
+              result_f_array = [];
+              first = false;
+              let list_element = document.getElementById("result");
+              list_element.removeChild(list_element.firstElementChild);
+              let list_element_f = document.getElementById("result_f");
+              list_element_f.removeChild(list_element_f.firstElementChild);
+            }
+            if(red_bool)
+            {
+              result_array.push(((timer_time/1000).toFixed(3)));
+              result_f_array.push((((timer_time/1000)/0.01666666).toFixed(1)));
+            }else{
+              result_array.push(9.999.toFixed(3));
+              result_f_array.push(99.9.toFixed(1));
+            }
+
+            img_set();
+
+            if(result_array.length > 10)
+            {
+              result_array.shift();
+              result_f_array.shift();
+              let list_element = document.getElementById("result");
+              list_element.removeChild(list_element.firstElementChild);
+              let list_element_f = document.getElementById("result_f");
+              list_element_f.removeChild(list_element_f.firstElementChild);
+            }
+
+            let add = document.createElement("li");
+            let add_f = document.createElement("li");
+            let average = 0;
+            let average_f = 0;
+            let error_count = 0;
+            for(let i=0;i<result_array.length;i++)
+            {
+              if(result_array[i] == 9.999)
+              {
+                error_count += 1;
+              }else{
+                  average += Number(result_array[i]);
+                  average_f += Number(result_f_array[i]);
+                }
+              document.getElementById("result").appendChild(add);
+              add.textContent = result_array[i];
+              document.getElementById("result_f").appendChild(add_f);
+              add_f.textContent = result_f_array[i]+"f";
+            }
+            average = (average / (result_array.length - error_count)).toFixed(3);
+            average_f = (average_f / (result_array.length - error_count)).toFixed(1);
+            console.log(average);
+            if(!isNaN(average))
+            {
+              document.getElementById("average").textContent = average;
+              document.getElementById("average_f").textContent = average_f+"f";
+            }else{
+              document.getElementById("average").textContent = 0.000.toFixed(3);
+              document.getElementById("average_f").textContent = 0.0.toFixed(1)+"f";
+            }
+
+            document.body.style.backgroundColor = "#191970";
+            const bbb = document.getElementById("canvas5");
+            bbb.style.backgroundColor = "#191970";
+            game_bool = false;
+            red_bool = false;
+            for(let i = 1; i <= 8; i++)
+            {
+                const bbb = document.getElementById(`canvas${i}`);
+                if(ttt[i-1]==random_number)
+                {
+                  bbb.removeEventListener('mousedown',game_click);
+                }
+            }
+            const ccc = document.getElementById("canvas10");
+            ccc.style.display = "block";
+          }
+      }
+
+      function reset_click()
+      {
+        document.getElementById("target").src = "stage_zero.png";
+        document.getElementById('explanation').style.opacity = '1';
+
+        result_array = [];
+        result_f_array = [];
+        document.getElementById('img').style.display = displayOriginal;
+        document.getElementById("img").src = "180half_f.gif";
+        clearInterval(game_timer);
+        clearInterval(stay_timer);
+        reset_value();
+        first = true;
+        document.body.style.backgroundColor = "#191970";
+        document.getElementById("result").textContent = result_array;
+        document.getElementById("result_f").textContent = result_f_array;
+        document.getElementById("time").textContent = "0.000";
+        if(first)
+        {
+          let add = document.createElement("li");
+          result_array.push(0.000.toFixed(3));
+          document.getElementById("result").appendChild(add);
+          add.textContent = result_array[0];
+          let add_f = document.createElement("li");
+          result_f_array.push(0.0.toFixed(1));
+          document.getElementById("result_f").appendChild(add_f);
+          add_f.textContent = result_f_array[0]+"f";
+        }
+        for(let i = 1; i<=8; i++)
+        {
+          const bbb = document.getElementById(`canvas${i}`);
+          bbb.style.opacity = '1';
+        }
+        const bbb = document.getElementById("canvas10");
+        bbb.style.display = "block";
+        for(let i = 1; i <= 8; i++)
+          {
+              const bbb = document.getElementById(`canvas${i}`);
+              if(ttt[i-1]==random_number)
+              {
+                bbb.removeEventListener('mousedown',game_click);
+              }
+          }
+        document.getElementById("average").textContent = 0.000.toFixed(3);
+        document.getElementById("average_f").textContent = 0.0.toFixed(1)+"f";
+        game_bool = false;
+      }
+
+      //シャッフルに使う関数
+      function shuffleArray(array)
+      {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      // スタートするまでのタイマー
+      function stay_tick()
+      {
+        let stay_now = new Date();
+        let stay_elapsed = (stay_now.getTime() - stayTime.getTime())/100;
+        if(stay_elapsed > random)
+        {
+          random_number = Math.floor( Math.random() * 8 + 1);
+          console.log(random_number)
+          document.getElementById("target").src = target_list[random_number-1];
+          ttt = shuffleArray(canvas_list);
+          for(let i = 1; i <= 8; i++)
+          {
+            const bbb = document.getElementById(`canvas${i}`);
+            bbb.src = `stage${ttt[i-1]}.png`;
+            bbb.style.opacity = '1';
+            if(ttt[i-1]==random_number)
+            {
+              bbb.addEventListener('mousedown',game_click);
+            }
+          }
+          clearInterval(stay_timer);
+          startTime = new Date;
+          clearInterval(game_timer);
+          game_timer = setInterval(game_tick, 1);  // タイマー開始
+          red_bool = true;
+        }
+      }
+
+      // ゲーム用タイマー
+      function game_tick()
+      {
+        let now = new Date();
+        timer_time = Math.floor(now.getTime() - startTime.getTime());
+        document.getElementById("time").textContent = (timer_time/1000).toFixed(3); // 経過時刻を表示
+        if(timer_time > 5000)
+        {
+          document.getElementById('explanation').style.opacity = '1';
+          document.getElementById('img').style.display = displayOriginal;
+          document.getElementById("img").src = "180half_f.gif";
+          document.getElementById("time").textContent = "0.000";
+          clearInterval(game_timer);
+          clearInterval(stay_timer);
+          if(first)
+          {
+            first = false;
+            result_array = [];
+            let list_element = document.getElementById("result");
+            list_element.removeChild(list_element.firstElementChild);
+            result_f_array = [];
+            let list_element_f = document.getElementById("result_f");
+            list_element_f.removeChild(list_element_f.firstElementChild);
+          }
+          result_array.push(9.999.toFixed(3));
+          result_f_array.push(99.9.toFixed(1));
+          if(result_array.length > 10)
+          {
+            result_array.shift();
+            let list_element = document.getElementById("result");
+            list_element.removeChild(list_element.firstElementChild);
+            result_f_array.shift();
+            let list_element_f = document.getElementById("result_f");
+            list_element_f.removeChild(list_element_f.firstElementChild);
+          }
+          let add = document.createElement("li");
+          let add_f = document.createElement("li");
+          let average = 0;
+          let average_f = 0;
+          let error_count = 0;
+            for(let i=0;i<result_array.length;i++)
+            {
+              if(result_array[i] == 9.999)
+              {
+                error_count += 1;
+              }else{
+                  average += Number(result_array[i]);
+                  average_f += Number(result_f_array[i]);
+                }
+              document.getElementById("result").appendChild(add);
+              add.textContent = result_array[i];
+              document.getElementById("result_f").appendChild(add_f);
+              add_f.textContent = result_f_array[i]+"f";
+            }
+            average = (average / (result_array.length - error_count)).toFixed(3);
+            average_f = (average_f / (result_array.length - error_count)).toFixed(1);
+            console.log(average);
+            if(!isNaN(average))
+            {
+              document.getElementById("average").textContent = average;
+              document.getElementById("average_f").textContent = average_f+"f";
+            }else{
+              document.getElementById("average").textContent = 0.000.toFixed(3);
+              document.getElementById("average_f").textContent = 0.0.toFixed(1)+"f";
+            }
+          document.body.style.backgroundColor = "#191970";
+          const bbb = document.getElementById("canvas10");
+          bbb.style.display = "block";
+          game_bool = false;
+          red_bool = false;
+        }
+      }
+
+      function reset_value()
+      {
+        random = 0;
+        stay_timer = NaN; // スタートするまでの時間計測用タイマー
+        game_timer = NaN; // クリアまでの時間計測用タイマー
+        stayTime = null;//待機時間
+        startTime = null; // ゲーム開始時刻
+        endTime = null;//クリックされ時刻
+        timer_time = null;
+
+        game_bool = false;
+        red_bool = false;
+      }
+
+      function img_set()
+      {
+        document.getElementById('img').style.display = displayOriginal;
+        if(result_array[result_array.length-1] >= 0.700)
+        {
+          document.getElementById("img").src = "180half_f.gif";
+        }else{
+          document.getElementById("img").src = "181half_f.gif";
+        }
+      }
+    </script>
+  </head>
+  <body bgcolor="#191970" text="#f0f8ff" onload="init()">
+    <h1 id = "hyouzi" style="text-align: center">反射神経テスト～数字～</h1>
+      <div class="all">
+        <div class="canvas_and_timer">
+          <div id="explanation">水色をクリックでスタート</div>
+            <div class="target_canvas_all">
+                <div class="target_canvas">
+                    <img id="canvas1" class="target" src="stage1.png">
+                    <img id="canvas2" class="target" src="stage2.png">
+                    <img id="canvas3" class="target" src="stage3.png">
+                    <img id="canvas4" class="target" src="stage4.png">
+                    <img id="target" src="stage_zero.png">
+                    <img id="canvas5" class="target" src="stage5.png">
+                    <img id="canvas6" class="target" src="stage6.png">
+                    <img id="canvas7" class="target" src="stage7.png">
+                    <img id="canvas8" class="target" src="stage8.png">
+                  </div>
+                <div id="canvas10" class="target" onmousedown="game_click()"></div>
+            </div>
+            <div class="timer" style="text-align: center">時間：<span id="time">0.000</span>秒</div>
+        </div>
+        <div class="number_all">
+          <div class="result_all">
+            <div>
+              <h2>タイム</h2>
+              <ol id="result" class="result" align="left"></ol>
+            </div>
+            <div>　　</div>
+            <div>
+              <h2>フレーム</h2>
+              <ol id="result_f" class="result_f" align="left"></ol>
+            </div>
+          </div>
+          <div class="average_all">
+            <button id="reset_button" class="button2"  type="button" onclick="reset_click()">リセット</button>
+            <p>平均
+              <br>
+                <div id="average" class="average"></div>
+              </br>
+            </p>
+            <p>平均フレーム
+              <br>
+              <div id="average_f" class="average_f"></div>
+            </br>
+            </p>
+            <div class="img">
+              <img width="150" height="150" id="img" src="180half_f.gif">
+            </div>
+          </div>
+        </div>
+    </div>
+  </body>
+</html>
