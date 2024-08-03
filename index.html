@@ -196,14 +196,18 @@
       {
         if(!game_bool)
         {
+          random_number = Math.floor( Math.random() * 8 + 1);
           document.getElementById("target").src = "stage_zero.png";
           document.getElementById('img').style.display = 'none';
           document.getElementById('explanation').style.opacity = '0';
           const ccc = document.getElementById("target");
+          ccc.src = target_list[random_number-1];
           ccc.style.opacity = '0';
+          ttt = shuffleArray(canvas_list);
           for(let i = 1; i <= 8; i++)
           {
               const bbb = document.getElementById(`canvas${i}`);
+              bbb.src = `stage${ttt[i-1]}.png`;
               bbb.style.opacity = '0';
           }
           const bbb = document.getElementById("canvas10");
@@ -305,7 +309,10 @@
 
       function reset_click()
       {
-        document.getElementById("target").src = "stage_zero.png";
+        const ccc = document.getElementById("target");
+        ccc.src = "stage_zero.png";
+        ccc.style.opacity = '1';
+
         document.getElementById('explanation').style.opacity = '1';
 
         result_array = [];
@@ -334,18 +341,14 @@
         for(let i = 1; i<=8; i++)
         {
           const bbb = document.getElementById(`canvas${i}`);
+          if(ttt[i-1]==random_number)
+          {
+            bbb.removeEventListener('mousedown',game_click);
+          }
           bbb.style.opacity = '1';
         }
         const bbb = document.getElementById("canvas10");
         bbb.style.display = "block";
-        for(let i = 1; i <= 8; i++)
-          {
-              const bbb = document.getElementById(`canvas${i}`);
-              if(ttt[i-1]==random_number)
-              {
-                bbb.removeEventListener('mousedown',game_click);
-              }
-          }
         document.getElementById("average").textContent = 0.000.toFixed(3);
         document.getElementById("average_f").textContent = 0.0.toFixed(1)+"f";
         game_bool = false;
@@ -368,17 +371,11 @@
         let stay_elapsed = (stay_now.getTime() - stayTime.getTime())/100;
         if(stay_elapsed > random)
         {
-          random_number = Math.floor( Math.random() * 8 + 1);
-          //console.log(random_number)
           const ccc = document.getElementById("target");
-          ccc.src = target_list[random_number-1];
           ccc.style.opacity = '1';
-
-          ttt = shuffleArray(canvas_list);
           for(let i = 1; i <= 8; i++)
           {
             const bbb = document.getElementById(`canvas${i}`);
-            bbb.src = `stage${ttt[i-1]}.png`;
             bbb.style.opacity = '1';
             if(ttt[i-1]==random_number)
             {
@@ -405,6 +402,15 @@
           document.getElementById('img').style.display = displayOriginal;
           document.getElementById("img").src = "180half_f.gif";
           document.getElementById("time").textContent = "0.000";
+
+          for(let i = 1; i<=8; i++)
+          {
+            const bbb = document.getElementById(`canvas${i}`);
+            if(ttt[i-1]==random_number)
+            {
+              bbb.removeEventListener('mousedown',game_click);
+            }
+          }
           clearInterval(game_timer);
           clearInterval(stay_timer);
           if(first)
